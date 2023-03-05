@@ -51,9 +51,10 @@ contract TestEntrypoint is Test {
     }
 
     function testMultipleHandleOp(uint256 _length) external {
-        vm.assume(_length < 100);
+        //vm.assume(_length < 100);
         UserOperation[] memory ops = new UserOperation[](_length);
 
+        entrypoint.depositTo{value:1e18*_length}(address(sender));
         vm.deal(address(sender), 1e18 * _length);
 
         for(uint256 i = 0; i < _length; i++) {
@@ -74,7 +75,7 @@ contract TestEntrypoint is Test {
         op.nonce = 0;
         op.callData = abi.encodeWithSelector(TestSender.execute.selector, _to, _value, _data);
         op.callGasLimit = 50000;
-        op.verificationGasLimit = 60000;
+        op.verificationGasLimit = 80000;
         op.preVerificationGas = 50000;
         op.maxFeePerGas = 50000;
         op.maxPriorityFeePerGas = 50001;

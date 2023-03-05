@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "src/interfaces/IAccount.sol";
@@ -24,9 +25,6 @@ contract TestSender is IAccount {
     function validateUserOp(UserOperation calldata, bytes32, uint256 amount)
     external returns (uint256 validationData) {
         (bool success, bytes memory ret) = msg.sender.call{value: amount}("");
-        if(!success) {
-            console.log(string(ret));
-        }
         return _packValidationData(sigFailed, validUntil, validAfter);
     }
 
