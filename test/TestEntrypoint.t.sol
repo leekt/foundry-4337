@@ -18,15 +18,18 @@ contract TestEntrypoint is Test {
 
     address eoaRecipient;
 
+    address payable bundler;
+
     function setUp() external {
         entrypoint = new EntryPoint();
         sender = new TestSender();
-        beneficiary = mockAddress("bundler");
+        beneficiary = mockAddress("beneficiary");
         senderOwner = mockAddress("senderOwner");
         eoaRecipient = mockAddress("EOA");
+        bundler = mockAddress("bundler");
     }
     
-    function mockAddress(string memory _name) public view returns(address payable) {
+    function mockAddress(string memory _name) public pure returns(address payable) {
         return payable(vm.addr(uint256(keccak256(abi.encodePacked("TestEntrypoint", _name)))));
     }
 
@@ -34,10 +37,17 @@ contract TestEntrypoint is Test {
         vm.deal(address(sender), 1e18);
         UserOperation[] memory ops = new UserOperation[](1);
         ops[0] = fillUserOp(eoaRecipient, 1, "");
+        vm.expectCall(address(eoaRecipient), 1, "");
+        uint256 balanceBefore = bundler.balance;
+        vm.startPrank(bundler);
         entrypoint.handleOps(
             ops,
-            beneficiary
+            bundler
         );
+        vm.stopPrank();
+        console.log("Before : ", balanceBefore);
+        console.log("After  : ",bundler.balance);
+        assert(bundler.balance >= balanceBefore);
     }
 
     function testMultipleHandleOp(uint256 _length) external {
@@ -67,6 +77,6 @@ contract TestEntrypoint is Test {
         op.verificationGasLimit = 60000;
         op.preVerificationGas = 50000;
         op.maxFeePerGas = 50000;
-        op.maxPriorityFeePerGas = 50000;
+        op.maxPriorityFeePerGas = 50001;
     }
 }
