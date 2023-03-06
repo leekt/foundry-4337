@@ -50,8 +50,24 @@ contract TestEntrypoint is Test {
         assert(bundler.balance >= balanceBefore);
     }
 
-    function testMultipleHandleOp(uint256 _length) external {
-        //vm.assume(_length < 100);
+    // function testMultipleHandleOp(uint256 _length) external {
+    //     vm.assume(_length < 10);
+    //     UserOperation[] memory ops = new UserOperation[](_length);
+
+    //     entrypoint.depositTo{value:1e18*_length}(address(sender));
+    //     vm.deal(address(sender), 1e18 * _length);
+
+    //     for(uint256 i = 0; i < _length; i++) {
+    //         ops[i] = fillUserOp(eoaRecipient, 1, "");
+    //     }
+    //     entrypoint.handleOps(
+    //         ops,
+    //         beneficiary
+    //     );
+    // }
+
+    function testMultipleHandleOp() external {
+        uint256 _length = 5;
         UserOperation[] memory ops = new UserOperation[](_length);
 
         entrypoint.depositTo{value:1e18*_length}(address(sender));
@@ -64,6 +80,7 @@ contract TestEntrypoint is Test {
             ops,
             beneficiary
         );
+
     }
 
     function fillUserOp(

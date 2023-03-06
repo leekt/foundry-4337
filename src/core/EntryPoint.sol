@@ -17,9 +17,7 @@ import "./StakeManager.sol";
 import "./SenderCreator.sol";
 import "./Helpers.sol";
 
-
 contract EntryPoint is IEntryPoint, StakeManager {
-event LogGasUsed(uint256 gasUsed);
 
     using UserOperationLib for UserOperation;
 
@@ -523,7 +521,6 @@ event LogGasUsed(uint256 gasUsed);
         }
     unchecked {
         uint256 gasUsed = preGas - gasleft();
-            emit LogGasUsed(gasUsed);
 
         if (userOp.verificationGasLimit < gasUsed) {
             revert FailedOp(opIndex, "AA40 over verificationGasLimit");
