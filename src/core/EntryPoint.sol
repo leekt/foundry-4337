@@ -602,6 +602,7 @@ contract EntryPoint is IEntryPoint, StakeManager {
         return a < b ? a : b;
     }
 
+//TODO i think i need to test this
     function getOffsetOfMemoryBytes(bytes memory data) internal pure returns (uint256 offset) {
         assembly {offset := data}
     }
