@@ -18,7 +18,7 @@ contract TestScript is Script {
         uint256 privKey = vm.envUint("PRIVATE_KEY");
         address payable beneficiary = payable(vm.addr(vm.envUint("PRIVATE_KEY")));
         vm.startBroadcast(privKey);
-        sender = new TestSender();
+        sender = new TestSender(entrypoint);
         uint256 _length = 5;
         UserOperation[] memory ops = new UserOperation[](_length);
 
