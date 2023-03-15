@@ -5,8 +5,6 @@ import "src/interfaces/IAccount.sol";
 import "src/core/Helpers.sol";
 import "src/interfaces/IEntryPoint.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
-
-import "forge-std/console.sol";
 contract TestSender is IAccount {
     IEntryPoint public immutable entryPoint;
 
@@ -36,14 +34,19 @@ contract TestSender is IAccount {
             abi.encodePacked(
                 address(this),
                 userOp.nonce,
-                userOp.callData
+                userOp.initCode,
+                userOp.callData,
+                userOp.callGasLimit,
+                userOp.verificationGasLimit,
+                userOp.preVerificationGas,
+                userOp.maxFeePerGas,
+                userOp.maxPriorityFeePerGas,
+                userOp.paymasterAndData
             )
         );
     }
-    function validateUserOp(UserOperation calldata userOp, bytes32 classicOpHash, uint256 amount)
+    function validateUserOp(UserOperation calldata userOp, bytes32, uint256 amount)
     external returns (uint256 validationData) {
-        console.log("classicOPHash");
-        console.logBytes32(classicOpHash);
         bytes32 userOpHash = getUserOpHash(userOp);
         bytes calldata signature = userOp.signature;
         bytes32 r = bytes32(signature[0x120:0x140]);
@@ -53,10 +56,9 @@ contract TestSender is IAccount {
         nonceUsed[userOp.nonce] = true;
         bytes32 digest = ECDSA.toEthSignedMessageHash(userOpHash);
         require(ECDSA.recover(digest, v, r, s) == owner, "invalid signature");
-        console.log("Succeeded");
         (bool success, bytes memory ret) = msg.sender.call{value: amount}("");
         if(!success) {
-            console.log(string(ret));
+            revert(string(ret));
         }
         return _packValidationData(sigFailed, 0, 0);
     }
