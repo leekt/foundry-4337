@@ -32,6 +32,8 @@ contract TestSender is IAccount {
     function getUserOpHash(UserOperation calldata userOp) public view returns(bytes32) {
         return keccak256(
             abi.encodePacked(
+                block.chainid,
+                address(entryPoint),
                 address(this),
                 userOp.nonce,
                 userOp.initCode,

@@ -238,7 +238,7 @@ contract TestEntrypoint is Test {
             data2
         );
         (success, ret) = address(entrypoint).call(c);
-        require(success, "reverted");
+        assertEq(success,false);
     }
 
 
@@ -271,11 +271,11 @@ contract TestEntrypoint is Test {
             uint256(32)
         );  // signature offset
         (address addr, uint256 priv) = makeAddrAndKey("senderOwner");
-        console.log("TEST ACCOUNT", addr);
-        console.log("owner :", sender.owner());
         bytes memory empty = hex"";
         bytes32 hash = keccak256(
             abi.encodePacked(
+                block.chainid,
+                address(entrypoint),
                 address(sender),
                 uint256(nonce), // nonce
                 empty,
@@ -304,6 +304,5 @@ contract TestEntrypoint is Test {
         require(addr == ECDSA.recover(hash.toEthSignedMessageHash(), v,r,s));
         bytes memory signature = abi.encodePacked(r, s, v);
         require(addr == ECDSA.recover(hash.toEthSignedMessageHash(), signature));
-        console.log("DL",data.length);
     }
 }
