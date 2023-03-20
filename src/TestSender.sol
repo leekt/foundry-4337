@@ -54,8 +54,6 @@ contract TestSender is IAccount {
         bytes32 r = bytes32(signature[0x120:0x140]);
         bytes32 s = bytes32(signature[0x140:0x160]);
         uint8 v = uint8(signature[0x17f]);
-        require(!nonceUsed[userOp.nonce], "nonce used");
-        nonceUsed[userOp.nonce] = true;
         bytes32 digest = ECDSA.toEthSignedMessageHash(userOpHash);
         require(ECDSA.recover(digest, v, r, s) == owner, "invalid signature");
         (bool success, bytes memory ret) = msg.sender.call{value: amount}("");

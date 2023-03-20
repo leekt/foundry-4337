@@ -160,7 +160,7 @@ contract TestEntrypoint is Test {
         console.log("hash1");
         console.logBytes(ret);
         bytes memory data2 = packMaliciousUserOp(
-            1,
+            0,
             abi.encodeWithSelector(TestSender.execute.selector, eoaRecipient, 2, ""),
             100000,
             100000,
