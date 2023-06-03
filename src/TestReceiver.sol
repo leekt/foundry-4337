@@ -6,4 +6,8 @@ contract TestReceiver {
     function mock() external payable {
         received += msg.value;
     }
+
+    function reverting() external {
+        require(false, "always reverts");
+    }
 }

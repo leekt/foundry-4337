@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import "src/TestSender.sol";
+import "src/TestReceiver.sol";
 import "src/core/EntryPoint.sol";
 import "forge-std/console.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
@@ -23,9 +24,10 @@ contract TestScript is Script {
         uint256 privKey = vm.envUint("PRIVATE_KEY");
         address payable beneficiary = payable(vm.addr(vm.envUint("PRIVATE_KEY")));
         vm.startBroadcast(privKey);
+        TestReceiver r = new TestReceiver();
         sender = TestSender(payable(0x477A1860c3aC1920d4Cd6DD2782657342Ff2E640));
         bytes memory data1 = packMaliciousUserOp(
-            2,
+            4,
             abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you jiffyscan"),
             100000,
             100000,
@@ -35,8 +37,8 @@ contract TestScript is Script {
         );
 
         bytes memory data2 = packMaliciousUserOp(
-            3,
-            abi.encodeWithSelector(TestSender.execute.selector, beneficiary, 0, "this one is for you blocknative"),
+            5,
+            abi.encodeWithSelector(TestSender.execute.selector, address(r), 0, abi.encodeWithSelector(TestReceiver.reverting.selector)),
             100000,
             100000,
             100000,
