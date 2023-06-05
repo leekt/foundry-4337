@@ -9,8 +9,10 @@ contract StakeManagerTest is Test {
         stakeManager = new MockStakeManager();
     }
 
-    function testHalmosStakeManager(uint112 value) public {
+    function testHalmosDeposit(uint112 value) public {
+        uint256 balance = stakeManager.balanceOf(random);
         value = uint112(bound(value,  1, type(uint64).max));
         stakeManager.depositTo{value: value}(random);
+        assertEq(stakeManager.balanceOf(random), balance + value);
     }
 }
